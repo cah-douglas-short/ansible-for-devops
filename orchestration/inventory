@@ -1,16 +1,16 @@
 # Application servers
-[app]
+[ansible1]
 192.168.60.4
-192.168.60.5
+#192.168.60.5
 
 # Database server
-[db]
-192.168.60.6
+#[db]
+#192.168.60.6
 
 # Group 'multi' with all servers
-[multi:children]
-app
-db
+#[multi:children]
+#app
+#db
 
 # Variables that will be applied to all servers
 [multi:vars]

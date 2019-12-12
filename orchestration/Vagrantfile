@@ -11,23 +11,52 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provider :virtualbox do |v|
     v.memory = 256
     v.linked_clone = true
-  end
 
-  # Application server 1.
-  config.vm.define "app1" do |app|
-    app.vm.hostname = "orc-app1.test"
+  end
+  config.vm.provision "shell", inline: <<-SHELL
+    #
+    # Update and install basic linux programs for development
+    #
+    sudo yum update -y
+    sudo yum install -y wget
+    sudo yum install -y curl
+    sudo yum install -y vim
+    sudo yum install -y git
+    sudo yum install -y build-essential
+    sudo yum install -y unzip
+    sudo yum install -y bind-utils
+    sudo yum install -y epel-release
+    #
+    # Install Ansible
+    #
+    cd /usr/local/src
+    sudo yum -y install git python-pip python-jinja2 python-paramiko PyYAML make MySQL-python
+    sudo pip install --upgrade pip
+    sudo pip install packaging
+    sudo git clone https://github.com/ansible/ansible.git
+    cd /usr/local/src/ansible
+    sudo git submodule update --init --recursive
+    sudo make install
+    sudo echo "[localhost]" > ~/ansible_hosts
+    sudo echo "localhost ansible_connection=local" >> ~/ansible_hosts
+    export ANSIBLE_INVENTORY=~/ansible_hosts
+  SHELL
+
+  # Ansible server 1.
+  config.vm.define "ansible1" do |app|
+    app.vm.hostname = "dshort-ansible1.test"
     app.vm.network :private_network, ip: "192.168.60.4"
   end
 
   # Application server 2.
-  config.vm.define "app2" do |app|
-    app.vm.hostname = "orc-app2.test"
-    app.vm.network :private_network, ip: "192.168.60.5"
-  end
+#  config.vm.define "app2" do |app|
+#    app.vm.hostname = "orc-app2.test"
+#    app.vm.network :private_network, ip: "192.168.60.5"
+#  end
 
   # Database server.
-  config.vm.define "db" do |db|
-    db.vm.hostname = "orc-db.test"
-    db.vm.network :private_network, ip: "192.168.60.6"
-  end
+#  config.vm.define "db" do |db|
+#    db.vm.hostname = "orc-db.test"
+#    db.vm.network :private_network, ip: "192.168.60.6"
+#  end
 end
